@@ -1,11 +1,112 @@
-import { compose, graphql } from 'react-apollo'
+import React from 'react'
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  Button
+} from 'react-native'
 
+import { Icon } from 'react-native-elements'
+import { compose, graphql } from 'react-apollo'
+import uuidV4 from 'uuid/v4'
+import Input from './Input'
 
 import CreateLocation from './mutations/CreateLocation'
 import ListLocations from './queries/ListLocations'
 import NewLocationSubscription from './subscriptions/NewLocationSubscription'
 
+const initialState = {
+  modalVisible: false,
+  name: '',
+  info: ''
+}
+
 class City extends React.Component {
+  static navigationOptions = (props) => {
+    const city = props.navigation.state.params.city
+    return {
+      title: city.name
+    }
+  }
+  state = initialState
+  componentWillMount(){
+   this.props.subscribeToNewLocations()
+  }
+  toggleModal() {
+    this.setState(state => ({ modalVisible: !state.modalVisible }))
+  }
+  onChangeText(key, value) {
+    this.setState({
+      [key]: value
+    })
+  }
+  createLocation() {
+    const location = {
+      cityId: this.props.navigation.state.params.city.id,
+      name: this.state.name,
+      info: this.state.info,
+      id: uuidV4()
+    }
+    this.props.onAdd(location)
+    this.setState(initialState)
+  }
+  render() {
+    const { locations } = this.props
+    return (
+      <View style={styles.container}>
+        {
+          locations.map((location, index) => (
+            <View key={index} style={styles.location}>
+              <Text style={styles.title}>{location.name}</Text>
+              <Text style={styles.subtitle}>{location.info}</Text>
+            </View>
+          ))
+        }
+        <Icon
+          raised
+          icon
+          color='white'
+          onPress={this.toggleModal.bind(this)}
+          underlayColor="#0091EA"
+          containerStyle={styles.icon}
+          name='add'
+        />
+        <Modal
+          visible={this.state.modalVisible}
+          animationType='slide'
+        >
+          <View style={styles.modal}>
+            <Input
+              onChangeText={this.onChangeText.bind(this)}
+              type='name'
+              placeholder='Name'
+              value={this.state.name}
+            />
+            <Input
+              onChangeText={this.onChangeText.bind(this)}
+              type='info'
+              placeholder='Info'
+              value={this.state.info}
+            />
+            <Icon
+              raised
+              icon
+              color='white'
+              onPress={this.toggleModal.bind(this)}
+              underlayColor="#0091EA"
+              containerStyle={styles.icon}
+              name='close'
+            />
+            <Button
+              onPress={this.createLocation.bind(this)}
+              title={`Add Location to ${this.props.navigation.state.params.city.name}`}
+            />
+          </View>
+        </Modal>
+      </View>
+    )
+  }
 }
 
 export default compose(

@@ -44,6 +44,26 @@ class Cities extends React.Component {
   navigate(city) {
     this.props.navigation.navigate('City', { city })
   }
+  render() {
+    const { cities } = this.props
+    return (
+      <ScrollView>
+        <View style={styles.container}>
+          {
+            cities.map((city, index) => (
+              <ListItem
+                containerStyle={styles.listItem}
+                onPress={() => this.navigate(city)}
+                key={index}
+                title={city.name}
+                subtitle={city.country}
+              />
+            ))
+          }
+        </View>
+      </ScrollView>
+    )
+  }
 }
  
 const CitiesWithData = compose(
