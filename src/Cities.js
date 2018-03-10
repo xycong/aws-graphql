@@ -37,13 +37,39 @@ class Cities extends React.Component {
       />
     )
   }
+
+  componentDidMount(){
+    this.props.subscribeToNewCities();
+  }
+  navigate(city) {
+    this.props.navigation.navigate('City', { city })
+  }
 }
  
 const CitiesWithData = compose(
   graphql(ListCities, {
-      props: props => ({
+    options: {
+      fetchPolicy: 'cache-and-network'
+    },
+    props: (props) => {
+      return {
         cities: props.data.listCities ? props.data.listCities.items : [],
-      })
+        subscribeToNewCities: params => {
+          props.data.subscribeToMore({
+            document: NewCitiesSubscription,
+            updateQuery: (prev, { subscriptionData: { data : { onCreateCity } } }) => {
+              return {
+                ...prev,
+                listCities: {
+                  __typename: 'CityConnection',
+                  items: [onCreateCity, ...prev.listCities.items.filter(city => city.id !== onCreateCity.id)]
+                }
+              }
+            }
+          });
+        }
+      }
+    }
   })
 )(Cities)
 

@@ -17,7 +17,7 @@ const initialState = {
   country: ''
 }
 
-class AddCity extends React.Component {
+class AddCity extends Component {
   state = initialState;
 
   onChangeText(key, value) {
@@ -61,6 +61,9 @@ class AddCity extends React.Component {
  
 export default compose(
   graphql(CreateCityMutation, {
+    options: {
+      errorPolicy: 'ignore'
+    },
     props: props => ({
       onAdd: city => props.mutate({
         variables: city,
